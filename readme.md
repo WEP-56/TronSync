@@ -4,6 +4,24 @@
 
 TronSync 是一个为澳门城市大学学生设计的桌面应用，提供便捷的课程管理、公告查看、文件下载等功能。
 
+
+---
+
+## 📸 截图预览
+
+<p align="center">
+  <img src="example/img1.png" width="30%" />
+  <img src="example/img2.png" width="30%" />
+  <img src="example/img3.png" width="30%" />
+</p>
+<p align="center">
+  <img src="example/img4.png" width="30%" />
+  <img src="example/img5.png" width="30%" />
+  <img src="example/img6.png" width="30%" />
+</p>
+
+---
+
 ## 功能特性
 
 - 📚 **课程管理**：查看所有课程信息
