@@ -1,0 +1,14 @@
+# 核心依赖
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Web框架
+Flask>=2.3.0
+Flask-CORS>=4.0.0
+
+# WebView界面
+pywebview>=4.0.0
+
+# 打包工具（开发依赖）
+pyinstaller>=5.13.0

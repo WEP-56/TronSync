@@ -1,0 +1,158 @@
+# ===================================
+# TronSync .gitignore
+# ===================================
+
+# ===================================
+# Python
+# ===================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec.bak
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.virtualenv/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# ===================================
+# Node.js / Frontend
+# ===================================
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build output
+frontend/dist/
+frontend/dist-ssr/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ===================================
+# 打包相关
+# ===================================
+# PyInstaller 打包输出
+dist/
+build/
+
+# 打包临时文件
+*.spec.bak
+
+# ===================================
+# 配置和敏感信息
+# ===================================
+# 用户配置（包含登录信息）
+config.json
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# ===================================
+# 日志文件
+# ===================================
+*.log
+logs/
+
+# ===================================
+# 临时文件
+# ===================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ===================================
+# 操作系统
+# ===================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# ===================================
+# 测试和覆盖率
+# ===================================
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+
+# ===================================
+# 其他
+# ===================================
+# 图标文件（如果是自定义的）
+# icon.ico
+
+# 备份文件
+*.bak
+*.backup
+
+# 压缩文件
+*.zip
+*.rar
+*.7z
+*.tar.gz
+
+# 发布包
+TronSync-*.zip
