@@ -1,0 +1,15 @@
+{
+    "username": " ",
+    "password": " ",
+    "settings": {
+        "theme": "light",
+        "compactMode": false,
+        "downloadPath": "",
+        "autoRefreshInterval": 5,
+        "autoLogin": false,
+        "notifyNewAnnouncement": true,
+        "notifyCourse": false
+    },
+    "remember_password": true,
+    "auto_login": true
+}

@@ -32,6 +32,10 @@
             <el-icon><component :is="FolderOpened" /></el-icon>
             <span>文件库</span>
           </el-menu-item>
+          <el-menu-item index="contacts">
+            <el-icon><component :is="Message" /></el-icon>
+            <span>联系</span>
+          </el-menu-item>
         </el-menu>
         
         <div class="logout-section">
@@ -373,6 +377,11 @@
             </div>
             <el-empty v-else-if="!loading" description="暂无文件" />
           </div>
+          
+          <!-- 联系页面 -->
+          <div v-else-if="activeMenu === 'contacts'" class="contacts-view">
+            <Contacts />
+          </div>
         </div>
       </el-main>
     </el-container>
@@ -577,6 +586,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import Contacts from './Contacts.vue'
 import { 
   Reading, 
   Calendar, 
@@ -595,7 +605,8 @@ import {
   InfoFilled,
   WarningFilled,
   Link,
-  Tools
+  Tools,
+  Message
 } from '@element-plus/icons-vue'
 import api from '../api'
 import CacheManager from '../utils/cacheManager'
@@ -684,7 +695,8 @@ const currentTitle = computed(() => {
     courses: '我的课程',
     schedule: '课程表',
     announcements: '公告',
-    files: '文件库'
+    files: '文件库',
+    contacts: '联系'
   }
   return titles[activeMenu.value] || ''
 })
@@ -816,7 +828,7 @@ const handleMenuSelect = (index) => {
   }
   
   // 只在数据未加载时才加载，避免频繁请求
-  if (!dataLoaded.value[index]) {
+  if (!dataLoaded.value[index] && index !== 'contacts') {
     loadData(false)
   } else {
     console.log(`📦 使用已加载的数据: ${index}`)
@@ -887,6 +899,8 @@ const loadData = async (forceRefresh = false) => {
       await loadAnnouncements(forceRefresh)
     } else if (activeMenu.value === 'files') {
       await loadFiles(forceRefresh, 0)
+    } else if (activeMenu.value === 'contacts') {
+      // 联系页面不需要加载特定数据，因为它使用静态数据
     }
   } catch (error) {
     console.error('加载数据失败:', error)
