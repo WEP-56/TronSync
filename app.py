@@ -14,6 +14,13 @@ from api.user_api import UserAPI
 from api.file_api import FileAPI
 from core.session_manager import SessionManager
 from core import config_manager
+from core.updater import Updater
+import threading
+import os
+import time
+
+# 应用版本号
+APP_VERSION = "v1.0.0"
 
 # 配置日志
 logging.basicConfig(
@@ -441,6 +448,48 @@ def download_file_api():
         logger.error(f"下载文件异常: {e}")
         logger.error(traceback.format_exc())
         return jsonify({'success': False, 'message': f'下载失败: {str(e)}'}), 500
+
+
+@app.route('/api/system/check-update', methods=['GET'])
+def check_update():
+    """检查更新"""
+    try:
+        updater = Updater(APP_VERSION)
+        result = updater.check_for_updates()
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"检查更新接口异常: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/system/perform-update', methods=['POST'])
+def perform_update():
+    """执行更新"""
+    try:
+        data = request.json
+        download_url = data.get('download_url')
+        if not download_url:
+            return jsonify({'success': False, 'message': 'Missing download_url'}), 400
+        
+        def update_task():
+            updater = Updater(APP_VERSION)
+            result = updater.perform_update(download_url)
+            if result.get('success'):
+                logger.info("更新准备就绪，即将退出程序...")
+                time.sleep(1) # 给前端一点时间接收响应
+                os._exit(0) # 强制退出，由 update.bat 接管
+            else:
+                logger.error(f"更新失败: {result.get('message')}")
+
+        # 在后台线程执行更新，避免阻塞请求
+        thread = threading.Thread(target=update_task)
+        thread.start()
+        
+        return jsonify({'success': True, 'message': '更新下载已在后台开始，下载完成后应用将自动重启'})
+            
+    except Exception as e:
+        logger.error(f"执行更新接口异常: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 if __name__ == '__main__':

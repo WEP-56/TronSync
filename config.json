@@ -1,14 +1,16 @@
 {
-    "username": " ",
-    "password": " ",
+    "username": "",
+    "password": "",
     "settings": {
-        "theme": "light",
-        "compactMode": false,
-        "downloadPath": "",
+        "compactMode": true,
+        "downloadPath": "C:/Users/14844/Downloads",
         "autoRefreshInterval": 5,
         "autoLogin": false,
         "notifyNewAnnouncement": true,
-        "notifyCourse": false
+        "notifyCourse": false,
+        "theme": "dark",
+        "themeColor": "#409eff",
+        "themeMode": "light"
     },
     "remember_password": true,
     "auto_login": true

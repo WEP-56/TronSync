@@ -133,8 +133,8 @@ dist/
 ### 上传到 GitHub
 
 1. 在 GitHub 仓库创建新的 Release
-2. 标签版本：`v1.0.0`
-3. 发布标题：`TronSync v1.0.0`
+2. 标签版本：`vX.X.X`
+3. 发布标题：`TronSync vX.X.X`
 4. 上传 `TronSync-v1.0.0.zip`
 5. 添加发布说明（使用 RELEASE_README.md 的内容）
 
@@ -363,7 +363,7 @@ git status
 
 编辑 `frontend/src/views/Home.vue`：
 ```vue
-<p class="app-version">版本 1.0.1</p>  <!-- 更新这里 -->
+<p class="app-version">版本 1.1.0</p>  <!-- 更新这里 -->
 ```
 
 ### 3. 构建前端

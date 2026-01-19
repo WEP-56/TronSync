@@ -1,6 +1,6 @@
 <template>
   <div class="home-container">
-    <el-container>
+    <el-container class="main-container">
       <!-- 侧边栏 -->
       <el-aside width="200px">
         <div class="logo">
@@ -10,6 +10,9 @@
           :default-active="activeMenu"
           class="side-menu"
           @select="handleMenuSelect"
+          background-color="#545c64"
+          text-color="#fff"
+          active-text-color="#ffd04b"
         >
           <el-menu-item index="dashboard">
             <el-icon><component :is="User" /></el-icon>
@@ -58,16 +61,28 @@
       <el-main>
         <div class="content-header">
           <h2>{{ currentTitle }}</h2>
-          <el-button @click="loadData(true)" :loading="loading" circle title="强制刷新">
-            <el-icon><component :is="Refresh" /></el-icon>
-          </el-button>
+          <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
+            <el-button 
+              @click="toggleTheme" 
+              circle 
+              :title="themeStore.themeMode === 'dark' ? '切换浅色模式' : '切换深色模式'"
+            >
+              <el-icon>
+                <component :is="themeStore.themeMode === 'dark' ? Moon : Sunny" />
+              </el-icon>
+            </el-button>
+            <el-button @click="loadData(true)" :loading="loading" circle title="强制刷新">
+              <el-icon><component :is="Refresh" /></el-icon>
+            </el-button>
+          </div>
         </div>
         
-        <div class="content-body">
-          <!-- 个人信息 Dashboard -->
-          <div v-if="activeMenu === 'dashboard'" class="dashboard-view">
-            <!-- 个人信息卡片 -->
-            <el-card class="profile-card" shadow="hover">
+        <el-scrollbar class="content-body">
+          <Transition name="fade-slide" mode="out-in">
+            <!-- 个人信息 Dashboard -->
+            <div v-if="activeMenu === 'dashboard'" key="dashboard" class="dashboard-view">
+              <!-- 个人信息卡片 -->
+              <el-card class="profile-card" shadow="hover">
               <div class="profile-header">
                 <el-avatar :size="80" :src="userProfile.avatar_url || '/default-avatar.png'" />
                 <div class="profile-info">
@@ -153,7 +168,7 @@
           </div>
           
           <!-- 课程列表 -->
-          <div v-if="activeMenu === 'courses'" class="courses-view">
+          <div v-else-if="activeMenu === 'courses'" key="courses" class="courses-view">
             <el-row :gutter="20">
               <el-col :span="8" v-for="course in courses" :key="course.id">
                 <el-card class="course-card" shadow="hover">
@@ -169,7 +184,7 @@
           </div>
           
           <!-- 课程表 -->
-          <div v-else-if="activeMenu === 'schedule'" class="schedule-view">
+          <div v-else-if="activeMenu === 'schedule'" key="schedule" class="schedule-view">
             <!-- 学年/学期/周数控制栏 -->
             <div class="semester-control">
               <!-- 学年切换 -->
@@ -269,7 +284,7 @@
           </div>
           
           <!-- 公告列表 -->
-          <div v-else-if="activeMenu === 'announcements'" class="announcements-view">
+          <div v-else-if="activeMenu === 'announcements'" key="announcements" class="announcements-view">
             <div v-if="announcements.length > 0" class="announcements-list">
               <el-card 
                 v-for="(announcement, index) in announcements" 
@@ -302,7 +317,7 @@
           </div>
           
           <!-- 文件库 -->
-          <div v-else-if="activeMenu === 'files'" class="files-view">
+          <div v-else-if="activeMenu === 'files'" key="files" class="files-view">
             <!-- 面包屑导航 -->
             <div class="breadcrumb-nav">
               <el-breadcrumb separator="/">
@@ -379,10 +394,11 @@
           </div>
           
           <!-- 联系页面 -->
-          <div v-else-if="activeMenu === 'contacts'" class="contacts-view">
+          <div v-else-if="activeMenu === 'contacts'" key="contacts" class="contacts-view">
             <Contacts />
           </div>
-        </div>
+          </Transition>
+        </el-scrollbar>
       </el-main>
     </el-container>
     
@@ -401,11 +417,28 @@
         </el-divider>
         
         <el-form-item label="主题模式">
-          <el-radio-group v-model="settings.theme" @change="applyTheme">
+          <el-radio-group v-model="themeStore.themeMode" @change="themeStore.applyTheme">
             <el-radio label="light">浅色</el-radio>
             <el-radio label="dark">深色</el-radio>
             <el-radio label="auto">跟随系统</el-radio>
           </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="主题颜色">
+          <div class="theme-colors">
+            <div 
+              v-for="theme in themeStore.presetThemes" 
+              :key="theme.color"
+              class="color-block"
+              :style="{ backgroundColor: theme.color }"
+              :class="{ active: themeStore.themeColor === theme.color }"
+              @click="themeStore.setColor(theme.color)"
+              :title="theme.name"
+            >
+              <el-icon v-if="themeStore.themeColor === theme.color" color="#fff"><component :is="Check" /></el-icon>
+            </div>
+            <el-color-picker v-model="themeStore.themeColor" @change="themeStore.setColor" />
+          </div>
         </el-form-item>
         
         <el-form-item label="紧凑模式">
@@ -498,7 +531,7 @@
             <el-icon :size="60" color="#409eff"><Reading /></el-icon>
           </div>
           <h2 class="app-name">TronSync</h2>
-          <p class="app-version">版本 1.0.0</p>
+          <p class="app-version">版本 1.1.0</p>
           <p class="app-description">澳门城市大学校园助手</p>
         </div>
         
@@ -554,6 +587,33 @@
         
         <el-divider />
         
+        <!-- 版本更新 -->
+        <div class="about-section">
+          <h3><el-icon><Refresh /></el-icon> 检查更新</h3>
+          <div class="update-box">
+            <div v-if="updateStatus === 'checking'" class="update-status">
+              <el-icon class="is-loading"><Loading /></el-icon> 正在检查更新...
+            </div>
+            <div v-else-if="updateStatus === 'has-update'" class="update-info">
+              <el-tag type="success" effect="dark">发现新版本 {{ newVersion }}</el-tag>
+              <p class="release-date">发布时间: {{ releaseDate }}</p>
+              <div class="release-notes" v-html="releaseNotes"></div>
+              <el-button type="primary" :loading="updating" @click="doUpdate">
+                {{ updating ? '正在下载更新...' : '立即更新并重启' }}
+              </el-button>
+            </div>
+            <div v-else-if="updateStatus === 'no-update'" class="update-status">
+              <el-icon color="#67C23A"><CircleCheckFilled /></el-icon> 当前已是最新版本
+            </div>
+            <div v-else class="update-action">
+              <p>当前版本: v1.0.0</p>
+              <el-button @click="checkUpdate">检查更新</el-button>
+            </div>
+          </div>
+        </div>
+
+        <el-divider />
+        
         <!-- 技术栈 -->
         <div class="about-section">
           <h3><el-icon><Tools /></el-icon> 技术栈</h3>
@@ -583,7 +643,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Contacts from './Contacts.vue'
@@ -606,14 +666,21 @@ import {
   WarningFilled,
   Link,
   Tools,
-  Message
+  Message,
+  Check,
+  Sunny,
+  Moon,
+  Loading,
+  CircleCheckFilled
 } from '@element-plus/icons-vue'
 import api from '../api'
 import CacheManager from '../utils/cacheManager'
 import SemesterManager from '../utils/semesterManager'
 import TIME_SLOTS, { isTimeInSlot, calculateSpanSlots } from '../utils/timeSlots'
+import { useThemeStore } from '../store/theme'
 
 const router = useRouter()
+const themeStore = useThemeStore()
 const loading = ref(false)
 const activeMenu = ref('dashboard')  // 默认显示个人信息
 const expandedAnnouncements = ref([])  // 记录展开的公告
@@ -623,7 +690,6 @@ const aboutVisible = ref(false)  // 关于对话框显示状态
 
 // 设置项
 const settings = reactive({
-  theme: 'light',  // light, dark, auto
   compactMode: false,
   downloadPath: '',
   autoRefreshInterval: 5,  // 分钟
@@ -879,7 +945,55 @@ const calculateUnreadCount = () => {
 }
 
 // forceRefresh: 是否强制刷新（点击刷新按钮时）
-const loadData = async (forceRefresh = false) => {
+const toggleTheme = async (event) => {
+  const isDark = themeStore.themeMode === 'dark'
+  const nextMode = isDark ? 'light' : 'dark'
+  
+  // 检查浏览器是否支持 View Transitions API
+  if (!document.startViewTransition) {
+    themeStore.setMode(nextMode)
+    return
+  }
+
+  // 获取点击位置作为动画圆心
+  const x = event.clientX
+  const y = event.clientY
+  const endRadius = Math.hypot(
+    Math.max(x, innerWidth - x),
+    Math.max(y, innerHeight - y)
+  )
+
+  const transition = document.startViewTransition(async () => {
+    themeStore.setMode(nextMode)
+    await nextTick()
+  })
+
+  transition.ready.then(() => {
+    const clipPath = [
+      `circle(0px at ${x}px ${y}px)`,
+      `circle(${endRadius}px at ${x}px ${y}px)`,
+    ]
+    
+    // 始终在“新”视图上执行扩散动画
+    document.documentElement.animate(
+      {
+        clipPath: clipPath,
+      },
+      {
+        duration: 400,
+        easing: 'ease-in',
+        pseudoElement: '::view-transition-new(root)',
+      }
+    )
+  })
+}
+
+// 监听主题变化，持久化设置
+watch(() => themeStore.themeMode, () => {
+  saveSettings()
+})
+
+const loadData = async (force = false) => {
   loading.value = true
   
   try {
@@ -1245,6 +1359,52 @@ const openAbout = () => {
   aboutVisible.value = true
 }
 
+// 更新相关
+const updateStatus = ref('initial') // initial, checking, has-update, no-update
+const newVersion = ref('')
+const releaseNotes = ref('')
+const downloadUrl = ref('')
+const releaseDate = ref('')
+const updating = ref(false)
+
+const checkUpdate = async () => {
+  updateStatus.value = 'checking'
+  try {
+    const res = await api.checkUpdate()
+    if (res.has_update) {
+      updateStatus.value = 'has-update'
+      newVersion.value = res.latest_version
+      // 简单处理换行
+      releaseNotes.value = res.release_notes ? res.release_notes.replace(/\n/g, '<br>') : '无更新说明'
+      downloadUrl.value = res.download_url
+      releaseDate.value = new Date(res.release_date).toLocaleString()
+    } else {
+      updateStatus.value = 'no-update'
+    }
+  } catch (error) {
+    console.error('Check update failed:', error)
+    updateStatus.value = 'initial'
+    ElMessage.error('检查更新失败: ' + (error.response?.data?.error || error.message))
+  }
+}
+
+const doUpdate = async () => {
+  if (!downloadUrl.value) return
+  updating.value = true
+  try {
+    const res = await api.performUpdate(downloadUrl.value)
+    if (res.success) {
+      ElMessage.success(res.message)
+    } else {
+      ElMessage.error('更新失败: ' + res.message)
+      updating.value = false
+    }
+  } catch (error) {
+    ElMessage.error('请求更新失败: ' + error.message)
+    updating.value = false
+  }
+}
+
 // 打开 GitHub
 const openGitHub = () => {
   window.open('https://github.com', '_blank')
@@ -1266,8 +1426,30 @@ const loadSettings = async () => {
 // 保存设置
 const saveSettings = async () => {
   try {
+    // 1. 保存到后端 API (Flask)
     const response = await api.saveSettings(settings)
-    if (response.success) {
+    
+    // 2. 保存到本地 Config 文件 (PyWebView)
+    if (window.pywebview) {
+      try {
+        const res = await window.pywebview.api.load_config()
+        let config = res.success ? res.data : {}
+        if (!config.settings) config.settings = {}
+        
+        // 合并设置
+        Object.assign(config.settings, settings)
+        
+        // 确保主题设置也同步
+        config.settings.themeMode = themeStore.themeMode
+        config.settings.themeColor = themeStore.themeColor
+        
+        await window.pywebview.api.save_config(config)
+      } catch (e) {
+        console.error('PyWebView 保存配置失败:', e)
+      }
+    }
+
+    if (response.success || window.pywebview) {
       ElMessage.success('设置已保存')
       settingsVisible.value = false
       applyAllSettings()
@@ -1280,35 +1462,12 @@ const saveSettings = async () => {
   }
 }
 
+
+
 // 应用所有设置
 const applyAllSettings = () => {
-  applyTheme()
+  themeStore.applyTheme()
   applyCompactMode()
-}
-
-// 应用主题
-const applyTheme = () => {
-  const html = document.documentElement
-  
-  console.log('🎨 应用主题:', settings.theme)
-  
-  if (settings.theme === 'dark') {
-    html.classList.add('dark')
-    console.log('✅ 已切换到深色主题')
-  } else if (settings.theme === 'light') {
-    html.classList.remove('dark')
-    console.log('✅ 已切换到浅色主题')
-  } else {
-    // 跟随系统
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    if (prefersDark) {
-      html.classList.add('dark')
-      console.log('✅ 跟随系统：深色主题')
-    } else {
-      html.classList.remove('dark')
-      console.log('✅ 跟随系统：浅色主题')
-    }
-  }
 }
 
 // 应用紧凑模式
@@ -1488,12 +1647,39 @@ html.compact-mode .content-body {
 html.compact-mode .el-card {
   margin-bottom: 12px !important;
 }
+
+/* 视图切换动画 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+/* View Transition API 配置 - 禁用默认动画以启用自定义 clip-path */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-image-pair(root) {
+  isolation: isolate;
+}
 </style>
 
 <style scoped>
 .home-container {
   width: 100%;
-  height: 100vh;
+  height: 100%;
 }
 
 .el-container {
@@ -1533,9 +1719,12 @@ html.compact-mode .el-card {
   border-top: 1px solid #434a50;
 }
 
-.el-main {
+.main-content {
   background: #f5f5f5;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .content-header {
@@ -1545,6 +1734,7 @@ html.compact-mode .el-card {
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 10;
 }
 
 .content-header h2 {
@@ -1555,6 +1745,8 @@ html.compact-mode .el-card {
 
 .content-body {
   padding: 30px;
+  flex: 1;
+  overflow: hidden;
 }
 
 .dashboard-view {
@@ -1672,6 +1864,29 @@ html.compact-mode .el-card {
 }
 
 /* 关于对话框样式 */
+.theme-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.color-block {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.color-block.active {
+  border-color: var(--el-text-color-primary);
+  transform: scale(1.1);
+  box-shadow: 0 0 4px rgba(0,0,0,0.2);
+}
+
 .about-content {
   padding: 20px 0;
 }
@@ -1712,6 +1927,54 @@ html.compact-mode .el-card {
   font-size: 18px;
   margin-bottom: 16px;
   color: #333;
+}
+
+.update-box {
+  padding: 10px;
+  background-color: var(--el-fill-color-light);
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.update-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--el-text-color-regular);
+}
+
+.update-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.release-date {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  margin: 0;
+}
+
+.release-notes {
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+  background: var(--el-bg-color);
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.update-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.update-action p {
+  margin: 0;
+  color: var(--el-text-color-secondary);
 }
 
 .declaration-box,

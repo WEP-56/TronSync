@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" :style="bgStyle">
     <div class="login-box">
       <div class="login-header">
         <h1>TronSync</h1>
@@ -55,12 +55,32 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useThemeStore } from '../store/theme'
 import { ElMessage } from 'element-plus'
 import api from '../api'
 
 const router = useRouter()
+const themeStore = useThemeStore()
+
+const bgStyle = computed(() => {
+  // 依赖 store 状态以触发更新
+  const mode = themeStore.themeMode
+  let isDark = mode === 'dark'
+  
+  if (mode === 'auto') {
+    isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+
+  if (isDark) {
+    return { background: '#141414' }
+  }
+  // 使用 CSS 变量以确保响应性
+  return { 
+    background: `linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%)`
+  }
+})
 const loginFormRef = ref(null)
 const loading = ref(false)
 const rememberPassword = ref(true)  // 默认勾选
@@ -193,7 +213,7 @@ onMounted(() => {
 <style scoped>
 .login-container {
   width: 100%;
-  height: 100vh;
+  height: 100%; /* 适配 TitleBar */
   display: flex;
   justify-content: center;
   align-items: center;

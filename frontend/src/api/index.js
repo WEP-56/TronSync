@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.DEV ? '/api' : 'http://127.0.0.1:5000/api',
   timeout: 30000,
   withCredentials: true
 })
@@ -113,5 +113,15 @@ export default {
   // 下载文件
   downloadFile(fileId, fileName) {
     return api.post('/files/download', { file_id: fileId, file_name: fileName })
+  },
+  
+  // 检查更新
+  checkUpdate() {
+    return api.get('/system/check-update')
+  },
+  
+  // 执行更新
+  performUpdate(downloadUrl) {
+    return api.post('/system/perform-update', { download_url: downloadUrl })
   }
 }
