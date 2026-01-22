@@ -156,3 +156,6 @@ htmlcov/
 
 # 发布包
 TronSync-*.zip
+
+# 但保留用户修复脚本
+!运行不了双击这里.bat

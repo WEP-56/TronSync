@@ -205,7 +205,25 @@ cd ..
 - 临时使用 `console=True` 查看详细错误信息
 - 在 `build.spec` 中添加缺失的模块
 
-### 4. 前端页面无法加载
+### 4. 缺少 Python.Runtime.dll 或其他 DLL ⭐
+
+**原因：** PyWebView 依赖的运行时库未正确打包
+
+**解决方案 1：使用修复脚本（推荐）**
+```bash
+# 打包后运行修复脚本
+python fix_pywebview.py
+```
+
+**解决方案 2：手动安装运行时**
+- 安装 [Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+- 安装 [.NET Framework 4.7.2+](https://dotnet.microsoft.com/download/dotnet-framework)
+- 安装 [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
+
+**解决方案 3：使用增强启动脚本**
+打包后会自动生成 `启动 TronSync.bat`，它会检查运行环境
+
+### 5. 前端页面无法加载
 
 **原因：** 静态文件路径问题
 
@@ -214,7 +232,7 @@ cd ..
 - 检查 `build.spec` 中的 `datas` 配置
 - 验证 `app.py` 中的静态文件路径
 
-### 5. 打包文件过大
+### 6. 打包文件过大
 
 **原因：** 包含了不必要的依赖
 
@@ -223,7 +241,7 @@ cd ..
 - 在 `build.spec` 中添加 `excludes` 排除不需要的模块
 - 参考下面的"优化建议"
 
-### 6. 杀毒软件误报
+### 7. 杀毒软件误报
 
 **原因：** PyInstaller 打包的程序可能被误报
 
@@ -232,7 +250,7 @@ cd ..
 - 使用代码签名证书（需要购买）
 - 向杀毒软件厂商报告误报
 
-### 7. 文件夹选择对话框不显示
+### 8. 文件夹选择对话框不显示
 
 **原因：** tkinter 未正确打包
 

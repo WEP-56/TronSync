@@ -1,11 +1,34 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+import sys
 
 block_cipher = None
+
+# PyWebView 相关的二进制文件和 DLL
+pywebview_binaries = []
+if sys.platform == 'win32':
+    # 添加 PyWebView 需要的 DLL
+    import webview
+    webview_path = os.path.dirname(webview.__file__)
+    
+    # 查找 PyWebView 的 DLL 文件
+    dll_files = [
+        'Microsoft.Toolkit.Win32.WebView.dll',
+        'Microsoft.Web.WebView2.Core.dll',
+        'Microsoft.Web.WebView2.WinForms.dll',
+        'Microsoft.Web.WebView2.Wpf.dll',
+        'WebView2Loader.dll'
+    ]
+    
+    for dll in dll_files:
+        dll_path = os.path.join(webview_path, 'lib', dll)
+        if os.path.exists(dll_path):
+            pywebview_binaries.append((dll_path, '.'))
 
 a = Analysis(
     ['run.py'],
     pathex=[],
-    binaries=[],
+    binaries=pywebview_binaries,  # 添加 PyWebView 的二进制文件
     datas=[
         ('frontend/dist', 'frontend/dist'),
         ('config.json', '.'),
@@ -16,8 +39,15 @@ a = Analysis(
         'requests',
         'bs4',
         'webview',
+        'webview.platforms.winforms',  # 添加 Windows 平台支持
+        'webview.platforms.cef',       # 添加 CEF 支持
         'tkinter',
+        'tkinter.filedialog',
         'PIL',
+        'clr',                         # 添加 .NET 支持
+        'System',
+        'System.Windows.Forms',
+        'System.Threading',
     ],
     hookspath=[],
     hooksconfig={},
